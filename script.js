@@ -148,11 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Hava Durumu API'si
-    const weatherWidget = document.querySelector('.weather-widget');
-    const weatherIcon = weatherWidget?.querySelector('.weather-icon');
-    const weatherTemp = weatherWidget?.querySelector('.weather-temp');
-
-    // Mersin koordinatları
     const LATITUDE = 36.8125;
     const LONGITUDE = 34.625;
 
@@ -161,10 +156,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LATITUDE}&longitude=${LONGITUDE}&hourly=temperature_2m,weathercode&current_weather=true&timezone=auto`);
             const data = await response.json();
 
-            if (data && data.current_weather && weatherIcon && weatherTemp) {
+            if (data && data.current_weather) {
                 const temp = Math.round(data.current_weather.temperature);
                 const weatherCode = data.current_weather.weathercode;
-                
+
                 // Hava durumu koduna göre ikon belirleme
                 let iconCode;
                 switch(weatherCode) {
@@ -188,20 +183,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 99: iconCode = '11d'; break;
                     default: iconCode = '01d';
                 }
-                
-                weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-                weatherTemp.textContent = `${temp}°C`;
+
+                // Tüm widget'ları güncelle
+                document.querySelectorAll('.weather-widget').forEach(widget => {
+                    const icon = widget.querySelector('.weather-icon');
+                    const tempSpan = widget.querySelector('.weather-temp');
+                    if (icon) icon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+                    if (tempSpan) tempSpan.textContent = `${temp}°C`;
+                });
             }
         } catch (error) {
             console.error('Hava durumu bilgisi alınamadı:', error);
         }
     }
 
-    // Sayfa yüklendiğinde hava durumunu al
-    getWeather();
-
-    // Her 30 dakikada bir hava durumunu güncelle
-    setInterval(getWeather, 30 * 60 * 1000);
+    document.addEventListener('DOMContentLoaded', () => {
+        getWeather();
+        setInterval(getWeather, 30 * 60 * 1000);
+    });
 
     // Dil değiştirme işlevselliği
     initLanguageSwitcher();
